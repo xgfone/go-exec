@@ -25,7 +25,7 @@ import (
 )
 
 var bufpool = sync.Pool{New: func() interface{} {
-	return bytes.NewBuffer(make([]byte, 128))
+	return bytes.NewBuffer(make([]byte, 256))
 }}
 
 // DefaultTimeout is the default timeout.
@@ -161,6 +161,8 @@ func (c *Cmd) Run(cxt context.Context, name string, args ...string) (
 
 	output := bufpool.Get().(*bytes.Buffer)
 	errput := bufpool.Get().(*bytes.Buffer)
+	output.Reset()
+	errput.Reset()
 
 	cmd := exec.CommandContext(cxt, name, args...)
 	cmd.Stdout = output
@@ -169,8 +171,6 @@ func (c *Cmd) Run(cxt context.Context, name string, args ...string) (
 	stdout = output.String()
 	stderr = errput.String()
 
-	output.Reset()
-	errput.Reset()
 	bufpool.Put(output)
 	bufpool.Put(errput)
 
