@@ -1,4 +1,4 @@
-# Command Execution [![Build Status](https://api.travis-ci.com/xgfone/go-exec.svg?branch=master)](https://travis-ci.com/github/xgfone/go-exec) [![GoDoc](https://pkg.go.dev/badge/github.com/xgfone/go-exec)](https://pkg.go.dev/github.com/xgfone/go-exec) [![License](https://img.shields.io/badge/License-Apache%202.0-blue.svg?style=flat-square)](https://raw.githubusercontent.com/xgfone/go-exec/master/LICENSE)
+# Command Execution [![Build Status](https://github.com/xgfone/go-exec/actions/workflows/go.yml/badge.svg)](https://github.com/xgfone/go-exec/actions/workflows/go.yml) [![GoDoc](https://pkg.go.dev/badge/github.com/xgfone/go-exec)](https://pkg.go.dev/github.com/xgfone/go-exec) [![License](https://img.shields.io/badge/License-Apache%202.0-blue.svg?style=flat-square)](https://raw.githubusercontent.com/xgfone/go-exec/master/LICENSE)
 
 The package supplies the common command execution supporting `Go1.7+`.
 
