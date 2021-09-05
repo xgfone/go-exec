@@ -44,7 +44,7 @@ func init() {
 // RunShellCmd runs the command cmdargs with cmdargs as the shell command,
 // that's,
 //   shell -c "fmt.Sprintf(cmdfmt, cmdargs...)".
-func (c *Cmd) RunShellCmd(ctx context.Context, cmdfmt string, cmdargs ...string) (
+func (c Cmd) RunShellCmd(ctx context.Context, cmdfmt string, cmdargs ...string) (
 	stdout, stderr string, err error) {
 	shell := c.Shell
 	if shell == "" {
@@ -63,25 +63,25 @@ func (c *Cmd) RunShellCmd(ctx context.Context, cmdfmt string, cmdargs ...string)
 }
 
 // ExecuteShellCmd is the same as RunShellCmd, but only returns the error.
-func (c *Cmd) ExecuteShellCmd(cxt context.Context, cmdfmt string, cmdargs ...string) error {
+func (c Cmd) ExecuteShellCmd(cxt context.Context, cmdfmt string, cmdargs ...string) error {
 	_, _, err := c.RunShellCmd(cxt, cmdfmt, cmdargs...)
 	return err
 }
 
 // OutputShellCmd is the same as RunShellCmd, but only returns stdout and error.
-func (c *Cmd) OutputShellCmd(cxt context.Context, cmdfmt string, cmdargs ...string) (string, error) {
+func (c Cmd) OutputShellCmd(cxt context.Context, cmdfmt string, cmdargs ...string) (string, error) {
 	stdout, _, err := c.RunShellCmd(cxt, cmdfmt, cmdargs...)
 	return string(stdout), err
 }
 
 // ExecuteShellScript is the same as RunShellScript, but only returns the error.
-func (c *Cmd) ExecuteShellScript(ctx context.Context, script string, args ...string) error {
+func (c Cmd) ExecuteShellScript(ctx context.Context, script string, args ...string) error {
 	_, _, err := c.RunShellScript(ctx, script, args...)
 	return err
 }
 
 // OutputShellScript is the same as RunShellScript, but only returns stdout and error.
-func (c *Cmd) OutputShellScript(ctx context.Context, script string, args ...string) (
+func (c Cmd) OutputShellScript(ctx context.Context, script string, args ...string) (
 	stdout string, err error) {
 	stdout, _, err = c.RunShellScript(ctx, script, args...)
 	return
@@ -89,7 +89,7 @@ func (c *Cmd) OutputShellScript(ctx context.Context, script string, args ...stri
 
 // RunShellScript runs the script with args as the shell script,
 // the content of which is fmt.Sprintf(script, args...).
-func (c *Cmd) RunShellScript(ctx context.Context, script string, args ...string) (
+func (c Cmd) RunShellScript(ctx context.Context, script string, args ...string) (
 	stdout, stderr string, err error) {
 	_script := script
 	if _len := len(args); _len != 0 {
@@ -114,7 +114,7 @@ func (c *Cmd) RunShellScript(ctx context.Context, script string, args ...string)
 	return c.Run(ctx, shell, filename)
 }
 
-func (c *Cmd) getScriptFile(script string) (filename string, err error) {
+func (c Cmd) getScriptFile(script string) (filename string, err error) {
 	var buf [8]byte
 	const chars = `0123456789abcdefghijklmnopqrstuvwxyz`
 	const charslen = len(chars)
