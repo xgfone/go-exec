@@ -47,6 +47,19 @@ func CombinedOutputCmdHook(cmd *exec.Cmd) (stdout, stderr string, err error) {
 	return
 }
 
+// StdoutAndStderrBufferCmdHook returns a CmdHook that uses the given stdout
+// and stderr buffer as the stdout and stderr of exec.Cmd.
+func StdoutAndStderrBufferCmdHook(stdout, stderr *bytes.Buffer) CmdHook {
+	return func(cmd *exec.Cmd) (_stdout, _stderr string, err error) {
+		cmd.Stdout = stdout
+		cmd.Stderr = stderr
+		err = cmd.Run()
+		_stdout = stdout.String()
+		_stderr = stderr.String()
+		return
+	}
+}
+
 // Result represents the result of the executed command, which has implemented
 // the interface error, so may be used as an error.
 type Result struct {
@@ -93,6 +106,9 @@ func (r Result) Error() string {
 // Unwrap implements errors.Unwrap.
 func (r Result) Unwrap() error { return r.Err }
 
+// CmdHook is used to customize how to run the command.
+type CmdHook func(cmd *exec.Cmd) (stdout, stderr string, err error)
+
 // Cmd represents a command executor.
 type Cmd struct {
 	// If not nil, it will be locked during the command is executed.
@@ -112,7 +128,7 @@ type Cmd struct {
 	Timeout time.Duration
 
 	// CmdHook is used to customize how to run the command.
-	CmdHook func(cmd *exec.Cmd) (stdout, stderr string, err error)
+	CmdHook CmdHook
 
 	// ResultHook is used to to observe the result of the command.
 	ResultHook func(Result)
