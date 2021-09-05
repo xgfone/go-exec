@@ -153,7 +153,7 @@ func (c Cmd) WithTimeout(timeout time.Duration) Cmd {
 }
 
 // WithCmdHook returns a new Cmd with the cmd hook.
-func (c Cmd) WithCmdHook(hook func(*exec.Cmd) (string, string, error)) Cmd {
+func (c Cmd) WithCmdHook(hook CmdHook) Cmd {
 	c.CmdHook = hook
 	return c
 }

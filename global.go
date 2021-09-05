@@ -16,7 +16,6 @@ package exec
 
 import (
 	"context"
-	"os/exec"
 	"sync"
 	"time"
 )
@@ -40,7 +39,7 @@ func WithTimeout(timeout time.Duration) Cmd {
 }
 
 // WithCmdHook is equal to DefaultCmd.WithCmdHook(hook).
-func WithCmdHook(hook func(*exec.Cmd) (string, string, error)) Cmd {
+func WithCmdHook(hook CmdHook) Cmd {
 	return DefaultCmd.WithCmdHook(hook)
 }
 
