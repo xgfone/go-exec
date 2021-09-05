@@ -19,6 +19,7 @@ package exec
 
 import (
 	"context"
+	"strings"
 	"testing"
 )
 
@@ -28,17 +29,10 @@ ls notexistfile
 ls notexitsfile 2>/dev/null
 `
 
-const expectedScript1Output = `README.md
-ls: notexistfile: No such file or directory
-`
-
 const combinedOutputScript2 = `
 ls notexitsfile 2>/dev/null
 ls notexistfile
 ls README.md
-`
-const expectedScript2Output = `ls: notexistfile: No such file or directory
-README.md
 `
 
 func TestCombinedOutputCmdHook(t *testing.T) {
@@ -49,15 +43,41 @@ func TestCombinedOutputCmdHook(t *testing.T) {
 	if err == nil {
 		t.Error("not expect error is nil")
 	}
-	if stdout != expectedScript1Output {
-		t.Errorf("expect '%s', but got '%s'", expectedScript1Output, stdout)
+	lines := strings.Split(strings.TrimSpace(stdout), "\n")
+	if len(lines) != 2 {
+		t.Errorf("expect %d line, but got %d", 2, len(lines))
+	}
+	for i, line := range lines {
+		switch i {
+		case 0:
+			if line != "README.md" {
+				t.Errorf("expect line '%s', but got '%s'", "README.md", line)
+			}
+		case 1:
+			if line == "notexistfile" {
+				t.Errorf("unexpect line '%s'", "notexistfile")
+			}
+		}
 	}
 
 	stdout, err = cmd.OutputShellScript(context.TODO(), combinedOutputScript2)
 	if err != nil {
 		t.Errorf("expect error is nil, but got '%v'", err)
 	}
-	if stdout != expectedScript2Output {
-		t.Errorf("expect '%s', but got '%s'", expectedScript2Output, stdout)
+	lines = strings.Split(strings.TrimSpace(stdout), "\n")
+	if len(lines) != 2 {
+		t.Errorf("expect %d line, but got %d", 2, len(lines))
+	}
+	for i, line := range lines {
+		switch i {
+		case 0:
+			if line == "notexistfile" {
+				t.Errorf("unexpect line '%s'", "notexistfile")
+			}
+		case 1:
+			if line != "README.md" {
+				t.Errorf("expect line '%s', but got '%s'", "README.md", line)
+			}
+		}
 	}
 }
