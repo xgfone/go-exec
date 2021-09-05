@@ -16,22 +16,36 @@ package exec
 
 import "context"
 
+// ExecuteShellScript is equal to DefaultCmd.ExecuteShellScript.
+func ExecuteShellScript(ctx context.Context, script string, args ...string) error {
+	return DefaultCmd.ExecuteShellScript(ctx, script, args...)
+}
+
+// OutputShellScript is equal to DefaultCmd.OutputShellScript
+func OutputShellScript(ctx context.Context, script string, args ...string) (
+	stdout string, err error) {
+	return DefaultCmd.OutputShellScript(ctx, script, args...)
+}
+
 // RunShellScript is equal to DefaultCmd.RunShellScript(ctx, script, args...).
-func RunShellScript(ctx context.Context, script string, args ...string) (string, string, error) {
+func RunShellScript(ctx context.Context, script string, args ...string) (
+	stdout, stderr string, err error) {
 	return DefaultCmd.RunShellScript(ctx, script, args...)
 }
 
 // RunShellCmd is equal to DefaultCmd.RunShellCmd(ctx, cmdfmt, cmdargs...).
-func RunShellCmd(ctx context.Context, cmdfmt string, cmdargs ...string) (string, string, error) {
+func RunShellCmd(ctx context.Context, cmdfmt string, cmdargs ...string) (
+	stdout, stderr string, err error) {
 	return DefaultCmd.RunShellCmd(ctx, cmdfmt, cmdargs...)
 }
 
-// ExecuteShell is equal to DefaultCmd.ExecuteShell(ctx, cmdfmt, cmdargs...).
-func ExecuteShell(ctx context.Context, cmdfmt string, cmdargs ...string) error {
-	return DefaultCmd.ExecuteShell(ctx, cmdfmt, cmdargs...)
+// ExecuteShellCmd is equal to DefaultCmd.ExecuteShellCmd(ctx, cmdfmt, cmdargs...).
+func ExecuteShellCmd(ctx context.Context, cmdfmt string, cmdargs ...string) error {
+	return DefaultCmd.ExecuteShellCmd(ctx, cmdfmt, cmdargs...)
 }
 
-// OutputShell is equal to DefaultCmd.OutputShell(ctx, cmdfmt, cmdargs...).
-func OutputShell(ctx context.Context, cmdfmt string, cmdargs ...string) (string, error) {
-	return DefaultCmd.OutputShell(ctx, cmdfmt, cmdargs...)
+// OutputShellCmd is equal to DefaultCmd.OutputShellCmd(ctx, cmdfmt, cmdargs...).
+func OutputShellCmd(ctx context.Context, cmdfmt string, cmdargs ...string) (
+	stdout string, err error) {
+	return DefaultCmd.OutputShellCmd(ctx, cmdfmt, cmdargs...)
 }

@@ -31,57 +31,74 @@ var bufpool = sync.Pool{New: func() interface{} {
 // DefaultTimeout is the default timeout.
 var DefaultTimeout time.Duration
 
-// CmdError represents a cmd error.
-type CmdError struct {
+// CombinedOutputCmdHook is a CmdHook to run the command and returns its
+// combined standard output and standard error, like exec.Cmd.CombinedOutput.
+func CombinedOutputCmdHook(cmd *exec.Cmd) (stdout, stderr string, err error) {
+	buf := bufpool.Get().(*bytes.Buffer)
+	buf.Reset()
+
+	cmd.Stdout = buf
+	cmd.Stderr = buf
+	err = cmd.Run()
+	stdout = buf.String()
+	stderr = buf.String()
+
+	bufpool.Put(buf)
+	return
+}
+
+// Result represents the result of the executed command, which has implemented
+// the interface error, so may be used as an error.
+type Result struct {
 	Name string
 	Args []string
 
-	Err    error
 	Stdout string
 	Stderr string
+	Err    error
 }
 
-// NewCmdError returns a new CmdError.
-func NewCmdError(name string, args []string, stdout, stderr string, err error) CmdError {
-	return CmdError{Name: name, Args: args, Stdout: stdout, Stderr: stderr, Err: err}
+// NewResult returns a new Result.
+func NewResult(name string, args []string, stdout, stderr string, err error) Result {
+	return Result{Name: name, Args: args, Stdout: stdout, Stderr: stderr, Err: err}
 }
 
-func (c CmdError) Error() string {
-	err := c.Err.Error()
-	buf := bytes.NewBuffer(nil)
-	buf.Grow(len(c.Stderr) + len(c.Stdout) + len(err) + len(c.Name) + 36)
+// Error implements the interface error.
+func (r Result) Error() string {
+	err := r.Err.Error()
+	buf := bufpool.Get().(*bytes.Buffer)
+	buf.Reset()
+
 	buf.WriteString("cmd=")
-	buf.WriteString(c.Name)
-
-	if len(c.Args) > 0 {
-		fmt.Fprintf(buf, ", args=%s", c.Args)
+	buf.WriteString(r.Name)
+	if len(r.Args) > 0 {
+		fmt.Fprintf(buf, ", args=%s", r.Args)
 	}
-	if len(c.Stdout) > 0 {
+	if len(r.Stdout) > 0 {
 		buf.WriteString(", stdout=")
-		buf.WriteString(c.Stdout)
+		buf.WriteString(r.Stdout)
 	}
-	if len(c.Stderr) > 0 {
+	if len(r.Stderr) > 0 {
 		buf.WriteString(", stderr=")
-		buf.WriteString(c.Stderr)
+		buf.WriteString(r.Stderr)
 	}
-
 	buf.WriteString(", err=")
 	buf.WriteString(err)
-	return buf.String()
+	errmsg := buf.String()
+
+	bufpool.Put(buf)
+	return errmsg
 }
 
 // Unwrap implements errors.Unwrap.
-func (c CmdError) Unwrap() error {
-	return c.Err
-}
-
-// ResultHook is a hook to observe the result of the command.
-type ResultHook func(name string, args []string, stdout, stderr string, err error)
+func (r Result) Unwrap() error { return r.Err }
 
 // Cmd represents a command executor.
 type Cmd struct {
-	// ResultHooks is the hooks to observe the result of the command.
-	ResultHooks []ResultHook
+	// If not nil, it will be locked during the command is executed.
+	//
+	// Default: nil
+	Lock *sync.Mutex
 
 	// Shell is used to execute the command as the shell.
 	//
@@ -94,57 +111,80 @@ type Cmd struct {
 	// If empty, use DefaultTimeout by default.
 	Timeout time.Duration
 
-	// RunCmd allows the user to decide how to run the command.
-	//
-	// Default: cmd.Run()
-	RunCmd func(cmd *exec.Cmd) error
+	// CmdHook is used to customize how to run the command.
+	CmdHook func(cmd *exec.Cmd) (stdout, stderr string, err error)
 
-	// If not nil, it will be locked during the command is executed.
-	//
-	// Default: nil
-	Lock *sync.Mutex
+	// ResultHook is used to to observe the result of the command.
+	ResultHook func(Result)
 }
 
-// NewCmd returns a new executor Cmd.
-func NewCmd() *Cmd { return new(Cmd) }
-
-// AppendResultHooks appends some result hooks.
-func (c *Cmd) AppendResultHooks(hooks ...ResultHook) {
-	c.ResultHooks = append(c.ResultHooks, hooks...)
+// WithLock returns a new Cmd with the lock.
+func (c Cmd) WithLock(lock *sync.Mutex) Cmd {
+	c.Lock = lock
+	return c
 }
 
-func (c *Cmd) runCmd(cmd *exec.Cmd) error {
+// WithShell returns a new Cmd with the shell.
+func (c Cmd) WithShell(shell string) Cmd {
+	c.Shell = shell
+	return c
+}
+
+// WithTimeout returns a new Cmd with the timeout.
+func (c Cmd) WithTimeout(timeout time.Duration) Cmd {
+	c.Timeout = timeout
+	return c
+}
+
+// WithCmdHook returns a new Cmd with the cmd hook.
+func (c Cmd) WithCmdHook(hook func(*exec.Cmd) (string, string, error)) Cmd {
+	c.CmdHook = hook
+	return c
+}
+
+// WithResultHook returns a new Cmd with the result hook.
+func (c Cmd) WithResultHook(hook func(Result)) Cmd {
+	c.ResultHook = hook
+	return c
+}
+
+func (c Cmd) defaultCmdHook(cmd *exec.Cmd) (stdout, stderr string, err error) {
+	stdoutbuf := bufpool.Get().(*bytes.Buffer)
+	stderrbuf := bufpool.Get().(*bytes.Buffer)
+	stdoutbuf.Reset()
+	stderrbuf.Reset()
+
+	cmd.Stdout = stdoutbuf
+	cmd.Stderr = stderrbuf
+	err = cmd.Run()
+	stdout = stdoutbuf.String()
+	stderr = stderrbuf.String()
+
+	bufpool.Put(stdoutbuf)
+	bufpool.Put(stderrbuf)
+	return
+}
+
+func (c Cmd) runCmd(cmd *exec.Cmd) (stdout, stderr string, err error) {
 	if c.Lock != nil {
 		c.Lock.Lock()
 		defer c.Lock.Unlock()
 	}
 
-	if c.RunCmd != nil {
-		return c.RunCmd(cmd)
+	if c.CmdHook == nil {
+		stdout, stderr, err = c.defaultCmdHook(cmd)
+	} else {
+		stdout, stderr, err = c.CmdHook(cmd)
 	}
-	return cmd.Run()
+
+	return
 }
 
-func (c *Cmd) runResultHooks(name string, args []string, stdout, stderr string,
-	err error) (string, string, error) {
-	for _, hook := range c.ResultHooks {
-		hook(name, args, stdout, stderr, err)
-	}
-
-	switch err.(type) {
-	case nil, CmdError:
-	default:
-		err = NewCmdError(name, args, stdout, stderr, err)
-	}
-
-	return stdout, stderr, err
-}
-
-// Run executes the command, name, with its arguments, args,
-// then returns stdout, stderr and error.
+// Run executes the command "name" with its arguments "args",
+// then returns the stdout and stderr.
 //
-// Notice: if there is an error to be returned, it is CmdError.
-func (c *Cmd) Run(cxt context.Context, name string, args ...string) (
+// Notice: if err is not nil, it is Result.
+func (c Cmd) Run(cxt context.Context, name string, args ...string) (
 	stdout, stderr string, err error) {
 	if name == "" {
 		panic("the cmd name is empty")
@@ -159,32 +199,29 @@ func (c *Cmd) Run(cxt context.Context, name string, args ...string) (
 		defer cancel()
 	}
 
-	output := bufpool.Get().(*bytes.Buffer)
-	errput := bufpool.Get().(*bytes.Buffer)
-	output.Reset()
-	errput.Reset()
-
 	cmd := exec.CommandContext(cxt, name, args...)
-	cmd.Stdout = output
-	cmd.Stderr = errput
-	err = c.runCmd(cmd)
-	stdout = output.String()
-	stderr = errput.String()
+	stdout, stderr, err = c.runCmd(cmd)
 
-	bufpool.Put(output)
-	bufpool.Put(errput)
+	result := NewResult(name, args, stdout, stderr, err)
+	if c.ResultHook != nil {
+		c.ResultHook(result)
+	}
 
-	return c.runResultHooks(name, args, stdout, stderr, err)
+	if err != nil {
+		err = result
+	}
+
+	return
 }
 
 // Execute is the same as RunCmd, but only returns the error.
-func (c *Cmd) Execute(cxt context.Context, name string, args ...string) error {
+func (c Cmd) Execute(cxt context.Context, name string, args ...string) error {
 	_, _, err := c.Run(cxt, name, args...)
 	return err
 }
 
 // Output is the same as RunCmd, but only returns the stdout and the error.
-func (c *Cmd) Output(cxt context.Context, name string, args ...string) (string, error) {
+func (c Cmd) Output(cxt context.Context, name string, args ...string) (string, error) {
 	stdout, _, err := c.Run(cxt, name, args...)
-	return string(stdout), err
+	return stdout, err
 }

@@ -62,16 +62,29 @@ func (c *Cmd) RunShellCmd(ctx context.Context, cmdfmt string, cmdargs ...string)
 	return c.Run(ctx, shell, "-c", cmdfmt)
 }
 
-// ExecuteShell is the same as RunShellCmd, but only returns the error.
-func (c *Cmd) ExecuteShell(cxt context.Context, cmdfmt string, cmdargs ...string) error {
+// ExecuteShellCmd is the same as RunShellCmd, but only returns the error.
+func (c *Cmd) ExecuteShellCmd(cxt context.Context, cmdfmt string, cmdargs ...string) error {
 	_, _, err := c.RunShellCmd(cxt, cmdfmt, cmdargs...)
 	return err
 }
 
-// OutputShell is the same as RunShellCmd, but only returns the stdout and the error.
-func (c *Cmd) OutputShell(cxt context.Context, cmdfmt string, cmdargs ...string) (string, error) {
+// OutputShellCmd is the same as RunShellCmd, but only returns stdout and error.
+func (c *Cmd) OutputShellCmd(cxt context.Context, cmdfmt string, cmdargs ...string) (string, error) {
 	stdout, _, err := c.RunShellCmd(cxt, cmdfmt, cmdargs...)
 	return string(stdout), err
+}
+
+// ExecuteShellScript is the same as RunShellScript, but only returns the error.
+func (c *Cmd) ExecuteShellScript(ctx context.Context, script string, args ...string) error {
+	_, _, err := c.RunShellScript(ctx, script, args...)
+	return err
+}
+
+// OutputShellScript is the same as RunShellScript, but only returns stdout and error.
+func (c *Cmd) OutputShellScript(ctx context.Context, script string, args ...string) (
+	stdout string, err error) {
+	stdout, _, err = c.RunShellScript(ctx, script, args...)
+	return
 }
 
 // RunShellScript runs the script with args as the shell script,
@@ -89,7 +102,7 @@ func (c *Cmd) RunShellScript(ctx context.Context, script string, args ...string)
 
 	filename, err := c.getScriptFile(_script)
 	if err != nil {
-		err = NewCmdError(script, args, "", "", err)
+		err = NewResult(script, args, "", "", err)
 		return
 	}
 	defer os.RemoveAll(filename)

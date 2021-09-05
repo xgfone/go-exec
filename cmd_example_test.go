@@ -26,9 +26,9 @@ rm -rf %s
 
 func ExampleCmd() {
 	Execute(context.Background(), "mkdir", "testdir")
-	ExecuteShell(context.Background(), "echo abc > %s/%s", "testdir", "testfile")
+	ExecuteShellCmd(context.Background(), "echo abc > %s/%s", "testdir", "testfile")
 
-	data, _ := OutputShell(context.Background(), "cat %s/%s", "testdir", "testfile")
+	data, _ := OutputShellCmd(context.Background(), "cat %s/%s", "testdir", "testfile")
 	fmt.Println(data)
 
 	_, _, err := RunShellScript(context.Background(), scripttmpl, "testdir", "testdir")

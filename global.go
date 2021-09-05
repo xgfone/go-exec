@@ -14,17 +14,42 @@
 
 package exec
 
-import "context"
+import (
+	"context"
+	"os/exec"
+	"sync"
+	"time"
+)
 
 // DefaultCmd is the global default cmd executor.
-var DefaultCmd = NewCmd()
+var DefaultCmd Cmd
 
-// AppendResultHooks is equal to DefaultCmd.AppendResultHooks(hooks...).
-func AppendResultHooks(hooks ...ResultHook) {
-	DefaultCmd.AppendResultHooks(hooks...)
+// WithLock is equal to DefaultCmd.WithLock(lock).
+func WithLock(lock *sync.Mutex) Cmd {
+	return DefaultCmd.WithLock(lock)
 }
 
-// RunCmd is equal to DefaultCmd.RunCmd(ctx, name, args...).
+// WithShell is equal to DefaultCmd.WithShell(shell).
+func WithShell(shell string) Cmd {
+	return DefaultCmd.WithShell(shell)
+}
+
+// WithTimeout is equal to DefaultCmd.WithTimeout(timeout).
+func WithTimeout(timeout time.Duration) Cmd {
+	return DefaultCmd.WithTimeout(timeout)
+}
+
+// WithCmdHook is equal to DefaultCmd.WithCmdHook(hook).
+func WithCmdHook(hook func(*exec.Cmd) (string, string, error)) Cmd {
+	return DefaultCmd.WithCmdHook(hook)
+}
+
+// WithResultHook is equal to DefaultCmd.WithResultHook(hook).
+func WithResultHook(hook func(Result)) Cmd {
+	return DefaultCmd.WithResultHook(hook)
+}
+
+// Run is equal to DefaultCmd.Run(ctx, name, args...).
 func Run(ctx context.Context, name string, args ...string) (stdout, stderr string, err error) {
 	return DefaultCmd.Run(ctx, name, args...)
 }
