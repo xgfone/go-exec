@@ -127,7 +127,7 @@ func (c Cmd) getScriptFile(script string) (filename string, err error) {
 	md5sum := md5.Sum(data)
 	hexsum := hex.EncodeToString(md5sum[:])
 	filename = fmt.Sprintf("_cmd_exec_run_shell_script_md5%s_%d_%s.sh",
-		hexsum, time.Now().UnixMicro(), string(buf[:]))
+		hexsum, time.Now().UnixNano(), string(buf[:]))
 
 	if ShellScriptDir != "" {
 		filename = filepath.Join(ShellScriptDir, filename)
