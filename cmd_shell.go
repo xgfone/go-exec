@@ -24,6 +24,7 @@ import (
 	"os"
 	"path/filepath"
 	"runtime"
+	"time"
 )
 
 // DefaultShell is the default shell to execute the shell command or script.
@@ -125,7 +126,8 @@ func (c Cmd) getScriptFile(script string) (filename string, err error) {
 	data := []byte(script)
 	md5sum := md5.Sum(data)
 	hexsum := hex.EncodeToString(md5sum[:])
-	filename = fmt.Sprintf("_cmd_exec_run_shell_script_%s_%s.sh", hexsum, string(buf[:]))
+	filename = fmt.Sprintf("_cmd_exec_run_shell_script_md5%s_%d_%s.sh",
+		hexsum, time.Now().UnixMicro(), string(buf[:]))
 
 	if ShellScriptDir != "" {
 		filename = filepath.Join(ShellScriptDir, filename)
