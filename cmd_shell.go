@@ -92,16 +92,16 @@ func (c Cmd) OutputShellScript(ctx context.Context, script string, args ...strin
 // the content of which is fmt.Sprintf(script, args...).
 func (c Cmd) RunShellScript(ctx context.Context, script string, args ...string) (
 	stdout, stderr string, err error) {
-	_script := script
+	scriptContent := script
 	if _len := len(args); _len != 0 {
 		vs := make([]interface{}, _len)
 		for i := 0; i < _len; i++ {
 			vs[i] = args[i]
 		}
-		_script = fmt.Sprintf(script, vs...)
+		scriptContent = fmt.Sprintf(script, vs...)
 	}
 
-	filename, err := c.getScriptFile(_script)
+	filename, err := GetScriptFile(ShellScriptDir, scriptContent)
 	if err != nil {
 		err = NewResult(script, args, "", "", err)
 		return
@@ -115,7 +115,11 @@ func (c Cmd) RunShellScript(ctx context.Context, script string, args ...string) 
 	return c.Run(ctx, shell, filename)
 }
 
-func (c Cmd) getScriptFile(script string) (filename string, err error) {
+// GetScriptFile generates a unique script filename and writes the script
+// into it.
+//
+// If dir is empty, use ShellScriptDir instead.
+func GetScriptFile(dir, scriptContent string) (filename string, err error) {
 	var buf [8]byte
 	const chars = `0123456789abcdefghijklmnopqrstuvwxyz`
 	const charslen = len(chars)
@@ -123,13 +127,16 @@ func (c Cmd) getScriptFile(script string) (filename string, err error) {
 		buf[i] = chars[rand.Intn(charslen)]
 	}
 
-	data := []byte(script)
+	data := []byte(scriptContent)
 	md5sum := md5.Sum(data)
 	hexsum := hex.EncodeToString(md5sum[:])
 	filename = fmt.Sprintf("_cmd_exec_run_shell_script_md5%s_%d_%s.sh",
 		hexsum, time.Now().UnixNano(), string(buf[:]))
 
-	if ShellScriptDir != "" {
+	if dir == "" {
+		dir = ShellScriptDir
+	}
+	if dir != "" {
 		filename = filepath.Join(ShellScriptDir, filename)
 	}
 
