@@ -28,8 +28,8 @@ var bufpool = sync.Pool{New: func() interface{} {
 	return bytes.NewBuffer(make([]byte, 256))
 }}
 
-// DefaultTimeout is the default timeout.
-var DefaultTimeout time.Duration
+// DefaultTimeout is the global default timeout.
+var DefaultTimeout = time.Second * 3
 
 // CombinedOutputCmdHook is a CmdHook to run the command and returns its
 // combined standard output and standard error, like exec.Cmd.CombinedOutput.
