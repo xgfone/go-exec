@@ -18,9 +18,6 @@ import "log"
 
 var logResult = _logresult
 
-// LogResult is a hook to log the command result.
-func LogResult(r Result) { logResult(r) }
-
 func _logresult(r Result) {
 	if r.Err == nil {
 		log.Printf("successfully execute the command: cmd=%s, args=%v", r.Name, r.Args)

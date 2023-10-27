@@ -21,12 +21,7 @@ import (
 )
 
 // DefaultCmd is the global default cmd executor.
-var DefaultCmd Cmd
-
-func init() {
-	DefaultCmd.Lock = new(sync.Mutex)
-	DefaultCmd.ResultHook = LogResult
-}
+var DefaultCmd = Cmd{Lock: new(sync.Mutex), ResultHook: logResult}
 
 // WithLock is equal to DefaultCmd.WithLock(lock).
 func WithLock(lock *sync.Mutex) Cmd {

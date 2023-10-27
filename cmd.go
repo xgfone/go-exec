@@ -128,9 +128,13 @@ type Cmd struct {
 	Timeout time.Duration
 
 	// CmdHook is used to customize how to run the command.
+	//
+	// Default: nil
 	CmdHook CmdHook
 
 	// ResultHook is used to to observe the result of the command.
+	//
+	// Default: nil
 	ResultHook func(Result)
 }
 
