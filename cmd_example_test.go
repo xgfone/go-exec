@@ -1,4 +1,4 @@
-// Copyright 2021 xgfone
+// Copyright 2021~2023 xgfone
 //
 // Licensed under the Apache License, Version 2.0 (the "License");
 // you may not use this file except in compliance with the License.
@@ -11,6 +11,9 @@
 // WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 // See the License for the specific language governing permissions and
 // limitations under the License.
+
+//go:build unix || aix || darwin || dragonfly || freebsd || linux || netbsd || openbsd || solaris
+// +build unix aix darwin dragonfly freebsd linux netbsd openbsd solaris
 
 package exec
 
@@ -25,8 +28,8 @@ rm -rf %s
 `
 
 func ExampleCmd() {
-	Execute(context.Background(), "mkdir", "testdir")
-	ExecuteShellCmd(context.Background(), "echo abc > %s/%s", "testdir", "testfile")
+	_ = Execute(context.Background(), "mkdir", "testdir")
+	_ = ExecuteShellCmd(context.Background(), "echo abc > %s/%s", "testdir", "testfile")
 
 	data, _ := OutputShellCmd(context.Background(), "cat %s/%s", "testdir", "testfile")
 	fmt.Println(data)

@@ -12,8 +12,8 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-//go:build aix || darwin || dragonfly || freebsd || linux || netbsd || openbsd || solaris
-// +build aix darwin dragonfly freebsd linux netbsd openbsd solaris
+//go:build unix || aix || darwin || dragonfly || freebsd || linux || netbsd || openbsd || solaris
+// +build unix aix darwin dragonfly freebsd linux netbsd openbsd solaris
 
 package exec
 
@@ -38,6 +38,7 @@ ls README.md
 func TestCombinedOutputCmdHook(t *testing.T) {
 	cmd := DefaultCmd
 	cmd.CmdHook = CombinedOutputCmdHook
+	cmd.ResultHook = func(Result) {}
 
 	stdout, err := cmd.OutputShellScript(context.TODO(), combinedOutputScript1)
 	if err == nil {

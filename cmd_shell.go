@@ -1,4 +1,4 @@
-// Copyright 2021 xgfone
+// Copyright 2021~2023 xgfone
 //
 // Licensed under the Apache License, Version 2.0 (the "License");
 // you may not use this file except in compliance with the License.
@@ -44,7 +44,8 @@ func init() {
 
 // RunShellCmd runs the command cmdargs with cmdargs as the shell command,
 // that's,
-//   shell -c "fmt.Sprintf(cmdfmt, cmdargs...)".
+//
+//	shell -c "fmt.Sprintf(cmdfmt, cmdargs...)".
 func (c Cmd) RunShellCmd(ctx context.Context, cmdfmt string, cmdargs ...string) (
 	stdout, stderr string, err error) {
 	shell := c.Shell

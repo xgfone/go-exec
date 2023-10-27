@@ -1,4 +1,4 @@
-// Copyright 2021 xgfone
+// Copyright 2021~2023 xgfone
 //
 // Licensed under the Apache License, Version 2.0 (the "License");
 // you may not use this file except in compliance with the License.
@@ -22,6 +22,11 @@ import (
 
 // DefaultCmd is the global default cmd executor.
 var DefaultCmd Cmd
+
+func init() {
+	DefaultCmd.Lock = new(sync.Mutex)
+	DefaultCmd.ResultHook = LogResult
+}
 
 // WithLock is equal to DefaultCmd.WithLock(lock).
 func WithLock(lock *sync.Mutex) Cmd {
