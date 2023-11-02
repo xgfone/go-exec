@@ -22,9 +22,7 @@ import (
 	"log/slog"
 )
 
-func init() { logResult = slogresult }
-
-func slogresult(r Result) {
+func logResult(r Result) {
 	if r.Err == nil {
 		slog.LogAttrs(context.Background(), slog.LevelInfo,
 			"successfully execute the command",

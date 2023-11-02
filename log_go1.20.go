@@ -12,13 +12,14 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
+//go:build !go1.21
+// +build !go1.21
+
 package exec
 
 import "log"
 
-var logResult = _logresult
-
-func _logresult(r Result) {
+func logResult(r Result) {
 	if r.Err == nil {
 		log.Printf("successfully execute the command: cmd=%s, args=%v", r.Name, r.Args)
 	} else {
