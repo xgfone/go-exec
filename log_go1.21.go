@@ -26,12 +26,15 @@ func logResult(r Result) {
 	if r.Err == nil {
 		slog.LogAttrs(context.Background(), slog.LevelInfo,
 			"successfully execute the command",
-			slog.String("cmd", r.Name), slog.Any("args", r.Args))
+			slog.String("cmd", r.Name), slog.Any("args", r.Args),
+			slog.String("cost", r.Cost.String()),
+		)
 	} else {
 		slog.LogAttrs(context.Background(), slog.LevelError,
 			"fail to execute the command",
 			slog.String("cmd", r.Name), slog.Any("args", r.Args),
 			slog.String("stdout", r.Stdout), slog.String("stderr", r.Stderr),
-			slog.String("err", r.Err.Error()))
+			slog.String("cost", r.Cost.String()), slog.String("err", r.Err.Error()),
+		)
 	}
 }

@@ -69,6 +69,8 @@ type Result struct {
 	Stdout string
 	Stderr string
 	Err    error
+
+	Cost time.Duration
 }
 
 // NewResult returns a new Result.
@@ -219,10 +221,12 @@ func (c Cmd) Run(cxt context.Context, name string, args ...string) (
 		defer cancel()
 	}
 
+	start := time.Now()
 	cmd := exec.CommandContext(cxt, name, args...)
 	stdout, stderr, err = c.runCmd(cmd)
 
 	result := NewResult(name, args, stdout, stderr, err)
+	result.Cost = time.Since(start)
 	if c.ResultHook != nil {
 		c.ResultHook(result)
 	}

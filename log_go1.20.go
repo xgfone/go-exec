@@ -21,9 +21,10 @@ import "log"
 
 func logResult(r Result) {
 	if r.Err == nil {
-		log.Printf("successfully execute the command: cmd=%s, args=%v", r.Name, r.Args)
+		log.Printf("successfully execute the command: cmd=%s, args=%v, cost=%s",
+			r.Name, r.Args, r.Cost.String())
 	} else {
-		log.Printf("fail to execute the command: cmd=%s, args=%v, stdout=%s, stderr=%s, err=%s",
-			r.Name, r.Args, r.Stdout, r.Stderr, r.Err.Error())
+		log.Printf("fail to execute the command: cmd=%s, args=%v, stdout=%s, stderr=%s, cost=%s, err=%s",
+			r.Name, r.Args, r.Stdout, r.Stderr, r.Cost.String(), r.Err.Error())
 	}
 }
